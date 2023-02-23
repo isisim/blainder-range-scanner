@@ -75,7 +75,11 @@ def getTargetIndices(targets, debugOutput):
 
         # only add the index if this group is not already in our dictionary
         if not categoryID in categoryIDs:
-            categoryIDs[categoryID] = categoryIndex
+            if isinstance(categoryID, int):
+                categoryIDs[categoryID] = categoryID
+            else:
+                categoryIDs[categoryID] = categoryIndex
+            
             categoryIndex += 1
 
 
@@ -196,18 +200,11 @@ def startScan(context, dependencies_installed, properties, objectName):
     if properties.singleRay:
         allTargets = [properties.targetObject]
     else:
-        allTargets = []
-        for viewLayer in bpy.context.scene.view_layers:
-            for obj in viewLayer.objects:
-                # get all visible objects
-                # filters:
-                # - object has some kind of geometry
-                # - is not excluded
-                # - has a material set
-                if obj.type == 'MESH' and \
-                    obj.hide_get() == False and \
-                    obj.active_material != None:
-                        allTargets.append(obj)
+        # get all visible objects
+        allTargets = list(filter(lambda x: x.type == 'MESH' and # object has some kind of geometry
+                                        x.hide_get() == False and # exclude hidden objects
+                                        x.active_material != None # only consider targets with a material set
+                                , bpy.context.scene.objects))
 
     if properties.scannerObject == None:
         print("No scanner object selected!")
