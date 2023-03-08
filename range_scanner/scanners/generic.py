@@ -75,7 +75,11 @@ def getTargetIndices(targets, debugOutput):
 
         # only add the index if this group is not already in our dictionary
         if not categoryID in categoryIDs:
-            categoryIDs[categoryID] = categoryIndex
+            if isinstance(categoryID, int):
+                categoryIDs[categoryID] = categoryID
+            else:
+                categoryIDs[categoryID] = categoryIndex
+            
             categoryIndex += 1
 
 
