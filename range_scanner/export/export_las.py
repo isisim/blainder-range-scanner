@@ -2,24 +2,18 @@ import laspy
 import numpy as np
 import os
 
-def export(filePath, fileName, data, exportNoiseData, usePartIDs):
+def export(filePath, fileName, data, exportNoiseData):
     print("Exporting data into .las format...")
 
     # create header 
     # see https://laspy.readthedocs.io/en/latest/tut_background.html for info on point formats
-    header = laspy.LasHeader(point_format=2)
+    header = laspy.LasHeader(version="1.4",point_format=8)
 
     # create output file path
-    if usePartIDs:
-        outfile = laspy.LasData(header=header)
-        
-        # assign data
-        outfile.pt_src_id = data[1]
-    else:
-        outfile = laspy.LasData(header=header)
+    outfile = laspy.LasData(header=header)
     
-        # assign data
-        outfile.pt_src_id = data[0]
+    # assign data
+    outfile.pt_src_id = data[1]
 
     allX = data[2]
     allY = data[3]
@@ -34,6 +28,17 @@ def export(filePath, fileName, data, exportNoiseData, usePartIDs):
     scaleFactor = 0.0001
     outfile.header.scale = [scaleFactor, scaleFactor, scaleFactor]
 
+    # Define the new attribute using the add_extra_dim() method
+    outfile.add_extra_dim(laspy.ExtraBytesParams(name="label", type=np.long, description="Class labeling"))
+    outfile.add_extra_dim(laspy.ExtraBytesParams(name="instance", type=np.long, description="Object instancing"))
+
+    print(data[0])
+    print(data[1])
+
+    # Add the new attribute to the LAS file
+    outfile.label = data[0]
+    outfile.instance = data[1]
+
     outfile.x = allX
     outfile.y = allY
     outfile.z = allZ
@@ -45,23 +50,15 @@ def export(filePath, fileName, data, exportNoiseData, usePartIDs):
     outfile.green = data[8] * 65535
     outfile.blue = data[9] * 65535
 
-    if usePartIDs:
-        outfile.write(os.path.join(filePath, "%s_parts.las" % fileName))
-    else:
-        outfile.write(os.path.join(filePath, "%s.las" % fileName))
+    outfile.write(os.path.join(filePath, "%s_parts.las" % fileName))
+
     
     if exportNoiseData:
         # create output file path
-        if usePartIDs:
-            outfile = laspy.LasData(header=header)
-            
-            # assign data
-            outfile.pt_src_id = data[1]
-        else:
-            outfile = laspy.LasData(header=header)
+        outfile = laspy.LasData(header=header)
         
-            # assign data
-            outfile.pt_src_id = data[0]
+        # assign data
+        outfile.pt_src_id = data[1]
 
         allX = data[10]
         allY = data[11]
@@ -85,9 +82,7 @@ def export(filePath, fileName, data, exportNoiseData, usePartIDs):
         outfile.green = data[8] * 65535
         outfile.blue = data[9] * 65535
 
-        if usePartIDs:
-            outfile.write(os.path.join(filePath, "%s_noise_parts.las" % fileName))
-        else:
-            outfile.write(os.path.join(filePath, "%s_noise.las" % fileName))
+        outfile.write(os.path.join(filePath, "%s_noise_parts.las" % fileName))
+
         
     print("Done.")

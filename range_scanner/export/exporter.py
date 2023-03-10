@@ -49,12 +49,8 @@ class Exporter:
 
     def exportLAS(self):  
         from . import export_las   
-        # export using categoryIDs as source ID 
-        export_las.export(self.filePath, self.fileName, self.mappedData, self.exportNoiseData, usePartIDs=False)
+        export_las.export(self.filePath, self.fileName, self.mappedData, self.exportNoiseData)
 
-        # export using partIDs as source ID 
-        export_las.export(self.filePath, self.fileName, self.mappedData, self.exportNoiseData, usePartIDs=True)
-    
     def exportHDF(self, fileNameExtra=""):
         from . import export_hdf
         export_hdf.export(self.filePath, self.rawFileName + fileNameExtra, self.mappedData, self.exportNoiseData)
